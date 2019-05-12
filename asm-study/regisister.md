@@ -36,7 +36,7 @@
     mov ax, [base:offset]
     mov ax, [offset]
 ```
-> 默认情况下base由ds寄存器指定，此时可以使用第二种的精简形式的指令，如果使用其他寄存器如ES，那么必须使用 ***base:offset***的形式。示例代码
+> 默认情况下base由ds寄存器指定，此时可以使用第二种的精简形式的指令，如果使用其他寄存器如ES，那么必须使用 ***base:offset*** 的形式，其中base在汇编中被称为<b>段前缀</b>。示例代码
 ```
 // 使用ds数据段寄存器
 mov ax， 1000h
@@ -70,6 +70,7 @@ mov ax,[bx+si+idata]
 mov ax,[bx+si+idata]
 mov ax,[bp+si+idata]
 mov ax,[bp+di+idata]
+以上代码均默认使用ds作为基址寄存器
 ```
 > 用BX, SI, DI这三个寄存器作为偏移量寄存器时，都缺省使用DS作为段寄存器。
 
