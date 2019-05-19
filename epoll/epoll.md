@@ -60,17 +60,27 @@ struct epoll_event
 
 ```
 > 其中event用于指定感兴趣的事件，主要有以下几种
-```
-
-
-```
+1. EPOLLIN: 可读取事件
+2. EPOLLOUT:　普通数据可写
+3. EPOLLRDHUP: 套接字对端关闭（自2.6.17，对端调用close，特别适用于检查对端是否关闭）
+4. EPOLLERR: 有错误发生
+5. EPOLLHUP: 出现挂断
+6. EPOLLONESHOT: 事件只接收一次通知，第一次通知后就会将对应的文件描述符永久的置为非激活状态，不会再有新通知到来
+> 将一个不可能触发该事件发生发生的套接字加入epoll，将会导致hup事件的上报,例如socket还没有connect或listen就加入epoll事件句柄
 > data是用户自定义数据，在使用epoll_ctl时使用data中哪个成员，那么在epoll_wait处理的时候就使用哪个成员做判断，常用的就是fd变量
+
+
 
 #### 返回值
 >成功返回0，失败返回-1，并设置errno
 
 ##### 注
-> 一般EPOLL_CTL_ADD 和 EPOLL_CTL_DEL是需要成对使用的，在退出的时候都要先EPOLL_CTL_DEL，再close文件描述符
+> 一般EPOLL_CTL_ADD 和 EPOLL_CTL_DEL是需要成对使用的，**在退出的时候都要先EPOLL_CTL_DEL，再close文件描述符,如果顺序反了，EPOLL_CTL_DEL会报错**
+
+> EPOLLOUT(写)监听的使用场，一般说明主要有以下三种使用场景:
+1. 对客户端socket只使用EPOLLIN(读)监听，不监听EPOLLOUT(写)，写操作一般使用socket的send操作
+2. 客户端的socket初始化为EPOLLIN(读)监听，有数据需要发送时，对客户端的socket修改为EPOLLOUT(写)操作，这时EPOLL机制会回调发送数据的函数，发送完数据之后，再将客户端的socket修改为EPOLL(读)监听
+3. 对客户端socket使用EPOLLIN 和 EPOLLOUT两种操作，这样每一轮epoll_wait循环都会回调读，写函数，这种方式效率不是很好
 
 ---
 
@@ -86,6 +96,16 @@ struct epoll_event
         const sigset_t *sigmask);
 
 ```
+> 这个函数用于监听使用epoll_ctl添加到由epoll_create创建的文件描述符中的文件描述符，所有就绪的文件描述符存放于events
+
+#### 参数
+1. epfd: epoll_create函数返回的文件描述符
+2. events: 用于存放返回就绪事件的数组
+3. maxevents: 关注的最多事件数，一般就是events数组的大小
+4. timeout: 超时时间，如果为-1，一直阻塞直到有至少一个事件就绪，如果为０，则执行一次非阻塞式的检查，看哪个事件就绪，如果大于０，则至多阻塞timeout秒，直到有事件就绪或捕捉到一个信号(比如SIGINT等信号)
+
+#### 返回值
+>成功返回0，失败返回-1，并设置errno
 
 ### 一个简单的例子
 ```
