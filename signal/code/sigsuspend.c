@@ -1,11 +1,9 @@
 /**
  * 演示 sigsuspend 函数的使用
- * 运行程序后，发送SIGINT信号，终止程序，说明sigsuspend函数起作用，
- * 因为tset设置不阻塞，将set设置的覆盖掉
- * 重新运行程序，先发送SIGINT信号，此时打印出sig，
- * 此时sigsuspend已经返回，
+ * 运行程序后，发送SIGUSR1信号，终止程序，
+ * 因为tset设置不阻塞，将set设置的覆盖掉，此时sigsuspend函数接到SIGUSR1返回，程序响应并使用默认的杀死进程的行为
+ * 重新运行程序，先发送SIGINT信号，此时打印出sig，此时sigsuspend已经返回，
  * 此时再发送SIGUSR1，程序无反应，说明掩码被重新设置为set，阻塞SIGUSR1
- * 然后
 */
 #ifndef _POSIX_SOURCE
 #define _POSIX_SOURCE
